@@ -1,10 +1,14 @@
 """
 Own image segmentation application, using the Mean-shift algorithm.
-"""
-import io
-from scipy import io
-import numpy as np
 
+Steps:
+1. Read the image and apply the preprocessing steps suggested above.
+2. Implement the Mean-shift algorithm, considering the suggested optimizations.
+3. Apply the algorithm on the image features, transform the result back to an image and visualize the obtained segmentation.
+4. Test different parameters, such as r, c, feature types
+"""
+from preprocess import load_data
+from imageSegmentation import segmIm
 
 if __name__ == '__main__':
     print("Not implemeneted")
@@ -15,5 +19,5 @@ if __name__ == '__main__':
     two clusters)
     """
     r = 2
-    mat = io.loadmat(r'data/pts.mat')
-    data = np.array(mat['data'])
+    img = load_data()
+    segmIm(im, r)
