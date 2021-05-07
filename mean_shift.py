@@ -1,4 +1,5 @@
 from config import *
+
 """
 Mean-shift algorithm
 
@@ -19,6 +20,7 @@ def cdist(data_point, data, metric='euclidian'):
     """
     find distances between a data point and all other data
     """
+    print("Not implemented")
 
 
 def find_peak_opt(data, idx, r, threshold, c=4):
@@ -32,17 +34,19 @@ def find_peak_opt(data, idx, r, threshold, c=4):
     :param r: search window radius
     :return: peak, cpts (vector storing a 1 for each point that is a distance of r/4 from the path and 0 otherwise)
     """
-    print("Peak search starts")
+    peak = []
+    cpts = []
 
     return peak, cpts
 
 
-def meanshift_opt(data, r, c):
+def meanshift_opt(data, r, c=4):
     """
     Calls findpeak() for each point and then assigns a label to each point according to its peak.
     Peaks are compared after each call to the findpeak function and similar peaks (distance between
     them is smaller than r/2) are merged. Also, if the found peak already exists in PEAKS, it is discarded and
-    the data point is given the associated peak label in PEAKS.
+    the data point is given the associated peak label in PEAKS. \n
+    Use matrix manipulation: found = np.argwhere(labels) or labels[labels>0] \n
     :param c:
     :param data:
     :param r:
@@ -50,6 +54,7 @@ def meanshift_opt(data, r, c):
     """
     print("Mean-Shift algorithm starts")
     peak, cpts = find_peak_opt(data, 0, r, 5, c)
-    found = np.argwhere(labels)  # labels[labels>0]
     distances = cdist(data_point, data)
 
+    labels, peaks = 0, 0
+    return labels, peaks

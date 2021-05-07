@@ -1,7 +1,9 @@
 """
 Image Segmentation with mean-shift algorithm
 """
-from config import *
+from config import cv2
+from mean_shift import meanshift_opt
+from visualization import plotclusters3D
 
 
 def segmIm(im, r):
@@ -12,6 +14,7 @@ def segmIm(im, r):
     :param r: radius
     :return:
     """
-    cv2.cvtColor(im, cv2.COLOR_RGB2LAB)  # cluster the image data in CIELAB color space by first converting the RGB color vectors to CIELAB
-
-    cv2.cvtColor(im, cv2.COLOR_LAB2RGB)  # convert resulting cluster centers back to RGB
+    labels, peaks = meanshift_opt(im, r, c=4)
+    # convert resulting cluster centers back to RGB
+    cv2.cvtColor(im, cv2.COLOR_LAB2RGB)
+    plotclusters3D(im, labels, peaks)

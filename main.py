@@ -7,11 +7,10 @@ Steps:
 3. Apply the algorithm on the image features, transform the result back to an image and visualize the obtained segmentation.
 4. Test different parameters, such as r, c, feature types
 """
-from preprocess import load_data
+from preprocess import load_image, load_mat
 from imageSegmentation import segmIm
 
 if __name__ == '__main__':
-    print("Not implemeneted")
 
     """
     Debug your algorithm using the data set (pts.mat which stores a set of 3D points belonging
@@ -19,5 +18,6 @@ if __name__ == '__main__':
     two clusters)
     """
     r = 2
-    img = load_data()
-    segmIm(im, r)
+    img, flatten = load_image()
+    points = load_mat()
+    segmIm(points, r)

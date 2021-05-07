@@ -8,23 +8,20 @@ Examples:
 from config import *
 
 
-def img_to_gray_hsv(image_path='lab1a.png'):
-    img = cv2.imread(image_path)
+def load_mat():
+    """
+    :return: flattened image with RGB pixel values and shape (2000, 3)
+    """
+    points = io.loadmat(r'data/pts.mat')["data"].reshape(-1, 3)
+    return points
 
-    # image from BGR, which is the default in cv2, to RGB
+
+def load_image(path=r'data/296007.jpg'):
+    img = cv2.imread(path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-    print('Size of the color image: {}'.format(img.shape))
 
-    # d) image to gray values
-    img_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    print('Size of the grayscale image: {}'.format(img_gray.shape))
+    # cluster the image data in CIELAB color space by first converting the RGB color vectors to CIELAB
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+    flatten = img.reshape(-1, 3)
 
-    # image to HSV space
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_RGB2HSV)
-    return img, img_gray, img_hsv
-
-
-def load_data(path=r'data/pts.mat'):
-    mat = io.loadmat(path)
-    data = np.array(mat['data'])
-    return data
+    return img, flatten
