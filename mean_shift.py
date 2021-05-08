@@ -2,7 +2,6 @@ from config import *
 
 """
 Mean-shift algorithm
-
 - Get data points (with many features, i.e. RGB values)
 - Choose feature (column of the data points vector)
 - For each data-point/pixel/row:
@@ -16,45 +15,73 @@ Mean-shift algorithm
 """
 
 
-def cdist(data_point, data, metric='euclidian'):
+def find_peak(data, idx, r, threshold, c=4):
     """
-    find distances between a data point and all other data
-    """
-    print("Not implemented")
-
-
-def find_peak_opt(data, idx, r, threshold, c=4):
-    """
-    - First SPEEDUP basin of attraction: Upon finding a peak, associate each data point that is at a distance≤ r from the peak with the cluster defined by that peak.\n
-    - Second SPEEDUP: points that are within a distance of r/c of the search path are associated with the converged peak \n
+    Assign a label to data[idx] corresponding to its associated peak
     :param threshold:
-    :param c: = 4 but you are also asked to check other values
     :param data: n-dimensional dataset consisting of p points
-    :param idx: column index of the data point for which we wish to compute its associated density peak
+    :param idx: index of the data point for which we wish to compute its associated density peak
     :param r: search window radius
-    :return: peak, cpts (vector storing a 1 for each point that is a distance of r/4 from the path and 0 otherwise)
+    :return: peak - n-dim array with "coordinates" of the found peak
+             cpts - vector storing a 1 for each point that is a distance<=r/c from the path and 0 otherwise
     """
-    peak = []
-    cpts = []
+    peak = np.zeros(data.shape[1])
+    cpts = np.zeros(data.shape[0])
+    window = data[idx]
+    num_points_inside = 0
+
+    # PEAK
+    path = []
+    found = False
+    while not found:
+        distances = np.array(cdist(window.reshape(1, -1), data, metric='euclidean').reshape(-1, 1))
+        indices = np.where(distances < r)[0]
+        data_inside = data[indices]
+        peak = np.mean(data_inside, axis=0)
+        path.append(peak)
+        if abs(num_points_inside-data_inside.shape[0]) < 3:
+            found = True
+            path = np.array(path)
+            print("Found peak at", peak, "after", path.shape[0], "window shifts")
+        else:
+            window = peak
+            num_points_inside = data_inside.shape[0]
+    # CPTS
+    for pos in path:
+        distances = np.array(cdist(pos.reshape(1, -1), data, metric='euclidean').reshape(-1, 1))
+        indices = np.where(distances < r/c)[0]
+        cpts[indices] += 1
 
     return peak, cpts
 
 
-def meanshift_opt(data, r, c=4):
+def meanshift(data, r, c=4):
     """
-    Calls findpeak() for each point and then assigns a label to each point according to its peak.
-    Peaks are compared after each call to the findpeak function and similar peaks (distance between
-    them is smaller than r/2) are merged. Also, if the found peak already exists in PEAKS, it is discarded and
-    the data point is given the associated peak label in PEAKS. \n
-    Use matrix manipulation: found = np.argwhere(labels) or labels[labels>0] \n
-    :param c:
-    :param data:
-    :param r:
-    :return: LABELS: vector containing the label for each data point (labels) - PEAKS: matrix storing the density peaks found using meanshift() as its columns
+    :returns: labels: vector containing the label (cluster label) for each data point
+             peaks: each column of the matrix is a peak. For each peak we have n-dim values (3D in case RGB)
     """
-    print("Mean-Shift algorithm starts")
-    peak, cpts = find_peak_opt(data, 0, r, 5, c)
-    distances = cdist(data_point, data)
+    labels = np.zeros(data.shape[0])
+    peaks = []
+
+    #TODO:
+    # 2 - After each call findpeak(), similar peaks (distance between them is smaller than r/2) are merged
+    # 3 - If the found peak already exists in PEAKS, it is discarded and the data point is given the associated peak label in PEAKS.
+
+    # 1
+    for i in range(len(data)):
+        peak, cpts = find_peak(data, i, r, 5, c)
+
+        # cpts is a vector storing a 1 for each point that is a distance<=r/c from the path and 0 otherwise
+        indices = np.nonzero(cpts)[0]
+
+
+        # Upon finding a peak, associate each data point that is at a distance≤ r from the peak with the cluster defined by that peak.
+
+        if peak not in peaks:
+            peaks.append(peak)
+        # 2 + 3
+
+    peaks = np.array(peaks)
 
     labels, peaks = 0, 0
     return labels, peaks

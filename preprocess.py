@@ -17,6 +17,10 @@ def load_mat():
 
 
 def load_image(path=r'data/296007.jpg'):
+    """
+    Work using the CIELAB color space in your code, where Euclidean distances in this space correlate
+    better with color changes perceived by the human eye.
+    """
     img = cv2.imread(path)
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 

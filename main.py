@@ -10,6 +10,8 @@ Steps:
 from preprocess import load_image, load_mat
 from imageSegmentation import segmIm
 
+MAT = True
+
 if __name__ == '__main__':
 
     """
@@ -18,6 +20,10 @@ if __name__ == '__main__':
     two clusters)
     """
     r = 2
-    img, flatten = load_image()
-    points = load_mat()
+
+    if MAT:
+        points = load_mat()
+    else:
+        img, points = load_image()
+
     segmIm(points, r)
