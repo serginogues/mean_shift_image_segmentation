@@ -1,5 +1,20 @@
 from config import *
 
+#TODO: convert resulting cluster centers back to RGB
+# cv2.cvtColor(im, cv2.COLOR_LAB2RGB)
+
+
+def plot_all(data, labels, peaks):
+    plt.subplot(1, 2, 1)
+    plt.scatter(data[:, 0], data[:, 1], c='c')
+    plt.scatter(peaks[:, 0], peaks[:, 1], c='r')
+
+    plt.subplot(1, 2, 2)
+    plt.scatter(data[:, 0], data[:, 1], c='c')
+    plt.scatter(data[:, 0], data[:, 1], c=labels, cmap="viridis")
+
+    plt.show()
+
 
 def plotclusters3D(data, labels, peaks):
     """

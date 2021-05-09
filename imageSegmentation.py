@@ -1,9 +1,8 @@
 """
 Image Segmentation with mean-shift algorithm
 """
-from config import cv2
 from mean_shift import meanshift
-from visualization import plotclusters3D
+from visualization import plot_all
 
 
 def segmIm(im, r):
@@ -12,7 +11,5 @@ def segmIm(im, r):
     :param r: radius
     """
     labels, peaks = meanshift(im, r, c=4)
-
-    #TODO: convert resulting cluster centers back to RGB
-    cv2.cvtColor(im, cv2.COLOR_LAB2RGB)
-    plotclusters3D(im, labels, peaks)
+    plot_all(im, labels, peaks)
+    # plotclusters3D(im, labels.tolist(), np.array(peaks).tolist())
