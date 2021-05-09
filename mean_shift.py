@@ -106,12 +106,22 @@ def meanshift(data, r, c=4):
             # SPEEDUP: points that are within a distance of r/c of the search path are associated with the converged peak
             indices = np.nonzero(cpts)[0]
             labels[indices] = label
-            indices2 = np.nonzero(close)[0]
-            labels[indices2] = label
+            indices = np.nonzero(close)[0]
+            labels[indices] = label
         else:
-            labels[i] = 4
-
-    # for pixels with label 4, assign closest peak/label
+            labels[i] = 100
     print("Found", len(peaks), "peaks")
+
+    # for pixels without label, assign closest peak/label
+    indices = np.where(labels == 100)[0]
+
+    for i in indices:
+        listt = []
+        for peak in peaks:
+            listt.append([peak, cdist(peak.reshape(1, -1), data[i].reshape(1, -1), metric='euclidean')[0][0]])
+        listt = np.array(listt)
+        label = np.where(listt[:,1] == min(listt[:,1]))[0][0]
+        labels[i] = label
+
     peaks = np.array(peaks)
     return labels, peaks
