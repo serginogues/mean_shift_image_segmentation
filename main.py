@@ -1,5 +1,5 @@
 """
-Own image segmentation application, using the Mean-shift algorithm.
+Mean-shift Image segmentation
 
 Steps:
 1. Read the image and apply the preprocessing steps suggested above.
@@ -10,20 +10,9 @@ Steps:
 from preprocess import load_image, load_mat
 from imageSegmentation import segmIm
 
-MAT = True
-
 if __name__ == '__main__':
 
-    """
-    Debug your algorithm using the data set (pts.mat which stores a set of 3D points belonging
-    to two 3D Gaussians) provided with the assignment zip folder with  r = 2 (this should give
-    two clusters)
-    """
-    r = 2
-
-    if MAT:
-        points = load_mat()
-    else:
-        img, points = load_image()
-
-    segmIm(points, r)
+    r = 7
+    # points = load_mat()
+    img, points = load_image('data/wild.jpg')
+    segmIm(points, r, img)

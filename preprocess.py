@@ -16,16 +16,15 @@ def load_mat():
     return points
 
 
-def load_image(path=r'data/296007.jpg'):
+def load_image(path=r'data/wild.jpg'):
     """
     Work using the CIELAB color space in your code, where Euclidean distances in this space correlate
     better with color changes perceived by the human eye.
     """
-    img = cv2.imread(path)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    img_origin = cv2.imread(path, cv2.COLOR_BGR2RGB)
 
     # cluster the image data in CIELAB color space by first converting the RGB color vectors to CIELAB
-    img = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+    img = cv2.cvtColor(img_origin, cv2.COLOR_RGB2LAB)
     flatten = img.reshape(-1, 3)
 
-    return img, flatten
+    return img_origin, flatten

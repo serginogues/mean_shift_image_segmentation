@@ -15,7 +15,7 @@ Mean-shift algorithm
 """
 
 
-def find_peak(data, idx, r, threshold, c=4, PLOT_ALL=False):
+def find_peak(data, idx, r, c=4, PLOT_ALL=False):
     """
     Assign a label to data[idx] corresponding to its associated peak
     :param threshold:
@@ -84,22 +84,27 @@ def meanshift(data, r, c=4):
     :returns: labels: vector containing the label (cluster label) for each data point
              peaks: each column of the matrix is a peak. For each peak we have n-dim values (3D in case RGB)
     """
-    labels = np.zeros(data.shape[0])
+    LABEL_INIT = 200000
+    LABEL_XTRA = 100000
+    labels = np.full(data.shape[0], LABEL_INIT)
     peaks = []
+    end = False
+    while not end:
+        idx = np.nonzero(labels == LABEL_INIT)[0][0]
+        print(idx, "out of", data.shape[0])
 
-    for i in tqdm(range(len(data))):
-        peak, cpts, close = find_peak(data, i, r, 5, c)
-
-        if np.count_nonzero(close) > 2:
-            # TODO:
+        peak, cpts, close = find_peak(data, idx, r, c)
+        if np.count_nonzero(close) > 10:
+            #TODO:
             # After each call findpeak(), similar peaks (distance between them is smaller than r/2) are merged
-            # If the found peak already exists in PEAKS, it is discarded and the data point is given the associated peak label in PEAKS.
+            # and the data point is given the associated peak label in PEAKS.
 
             similar = [x for x in peaks if cdist(peak.reshape(1, -1), x.reshape(1, -1), metric='euclidean') < r / 2]
             if len(similar) == 1:
                 peak = similar[0]
             else:
                 peaks.append(peak)
+
             array = np.array(peaks)
             label = np.where(array == peak)[0][0]
 
@@ -108,18 +113,23 @@ def meanshift(data, r, c=4):
             labels[indices] = label
             indices = np.nonzero(close)[0]
             labels[indices] = label
+            labels[idx] = label
+            # print(np.count_nonzero(labels != 200), "labeled points out of", len(data))
         else:
-            labels[i] = 100
+            labels[idx] = LABEL_XTRA
+
+        if np.count_nonzero(labels == LABEL_INIT) == 0:
+            end = True
+
     print("Found", len(peaks), "peaks")
 
     # for pixels without label, assign closest peak/label
-    indices = np.where(labels == 100)[0]
-
+    indices = np.where(labels == LABEL_XTRA)[0]
     for i in indices:
         listt = []
         for peak in peaks:
             listt.append([peak, cdist(peak.reshape(1, -1), data[i].reshape(1, -1), metric='euclidean')[0][0]])
-        listt = np.array(listt)
+        listt = np.asarray(listt, dtype="object")
         label = np.where(listt[:,1] == min(listt[:,1]))[0][0]
         labels[i] = label
 

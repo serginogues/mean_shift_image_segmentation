@@ -39,3 +39,4 @@ def plotclusters3D(data, labels, peaks):
         cluster = data[np.where(labels == idx)[0]].T
         ax.scatter(cluster[0], cluster[1], cluster[2], c=[color], s=.5)
     fig.show()
+    plt.show()
