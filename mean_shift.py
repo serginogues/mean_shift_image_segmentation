@@ -87,7 +87,7 @@ def meanshift(data, r, c=4):
     labels = np.zeros(data.shape[0])
     peaks = []
 
-    for i in range(len(data)):
+    for i in tqdm(range(len(data))):
         peak, cpts, close = find_peak(data, i, r, 5, c)
 
         if np.count_nonzero(close) > 2:
