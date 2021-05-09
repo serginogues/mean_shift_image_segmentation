@@ -15,10 +15,9 @@ Mean-shift algorithm
 """
 
 
-def find_peak(data, idx, r, c=4, PLOT_ALL=False):
+def find_peak(data, idx, r, c, PLOT_ALL=False):
     """
     Assign a label to data[idx] corresponding to its associated peak
-    :param threshold:
     :param data: n-dimensional dataset consisting of p points
     :param idx: index of the data point for which we wish to compute its associated density peak
     :param r: search window radius
@@ -79,7 +78,7 @@ def find_peak(data, idx, r, c=4, PLOT_ALL=False):
     return peak, cpts, close
 
 
-def meanshift(data, r, c=4):
+def meanshift(data, r, c):
     """
     :returns: labels: vector containing the label (cluster label) for each data point
              peaks: each column of the matrix is a peak. For each peak we have n-dim values (3D in case RGB)
@@ -94,8 +93,7 @@ def meanshift(data, r, c=4):
         print(idx, "out of", data.shape[0])
 
         peak, cpts, close = find_peak(data, idx, r, c)
-        if np.count_nonzero(close) > 10:
-            #TODO:
+        if np.count_nonzero(close) > 2:
             # After each call findpeak(), similar peaks (distance between them is smaller than r/2) are merged
             # and the data point is given the associated peak label in PEAKS.
 
@@ -130,7 +128,7 @@ def meanshift(data, r, c=4):
         for peak in peaks:
             listt.append([peak, cdist(peak.reshape(1, -1), data[i].reshape(1, -1), metric='euclidean')[0][0]])
         listt = np.asarray(listt, dtype="object")
-        label = np.where(listt[:,1] == min(listt[:,1]))[0][0]
+        label = np.where(listt[:, 1] == min(listt[:, 1]))[0][0]
         labels[i] = label
 
     peaks = np.array(peaks)

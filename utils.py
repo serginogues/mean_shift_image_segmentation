@@ -22,9 +22,21 @@ def load_image(path=r'data/wild.jpg'):
     better with color changes perceived by the human eye.
     """
     img_origin = cv2.imread(path, cv2.COLOR_BGR2RGB)
-
     # cluster the image data in CIELAB color space by first converting the RGB color vectors to CIELAB
     img = cv2.cvtColor(img_origin, cv2.COLOR_RGB2LAB)
-    flatten = img.reshape(-1, 3)
+    return img
 
-    return img_origin, flatten
+
+def save_image(img, filename='test.jpg'):
+    cv2.imwrite("renders/"+filename, img)
+    print('Image saved with name:', filename)
+
+
+def post_process(labels, peaks, im):
+    """
+    :return: segmented image
+    """
+    segmented_img = peaks[np.reshape(labels, im.shape[:2])]
+    segmented_img = cv2.cvtColor(segmented_img.astype(np.uint8), cv2.COLOR_LAB2RGB)
+
+    return segmented_img.astype(np.uint8)

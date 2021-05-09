@@ -40,3 +40,9 @@ def plotclusters3D(data, labels, peaks):
         ax.scatter(cluster[0], cluster[1], cluster[2], c=[color], s=.5)
     fig.show()
     plt.show()
+
+
+def show_image(img):
+    cv2.imshow('Segmented Image', img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()

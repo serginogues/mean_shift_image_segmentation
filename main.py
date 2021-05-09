@@ -1,18 +1,28 @@
 """
 Mean-shift Image segmentation
 
-Steps:
-1. Read the image and apply the preprocessing steps suggested above.
-2. Implement the Mean-shift algorithm, considering the suggested optimizations.
-3. Apply the algorithm on the image features, transform the result back to an image and visualize the obtained segmentation.
-4. Test different parameters, such as r, c, feature types
+Experiments:
+- For different values of r and c
+- For 3 different images:
+    girl - https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/segbench/BSDS300/html/dataset/images/color/181091.html
+    mask - https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/segbench/BSDS300/html/dataset/images/color/55075.html
+    bigben - https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/grouping/segbench/BSDS300/html/dataset/images/color/368078.html
+- For each value of r, run your algorithm using (1) just the CIELAB color values
+(i.e., a 3D feature vector), and (2) CIELAB+position values (i.e., a 5D feature vector)
+
+Report:
+Can you suggest other processing steps in order to improve the segmentation
+results? Explain your steps and the reasons behind them.
 """
-from preprocess import load_image, load_mat
+from utils import load_image, save_image
 from imageSegmentation import segmIm
+
+r = 25
+c = 20
 
 if __name__ == '__main__':
 
-    r = 7
-    # points = load_mat()
-    img, points = load_image('data/wild.jpg')
-    segmIm(points, r, img)
+    image_name = 'girl'
+    img = load_image('data/'+image_name+'.jpg')
+    segmented_img, num_peaks = segmIm(img, r, c, True)
+    save_image(segmented_img, image_name+'_r'+str(r)+'_c'+str(c)+'_'+str(num_peaks)+'peaks.jpg')
