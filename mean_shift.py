@@ -94,6 +94,7 @@ def meanshift(data, r, c=4):
             # TODO:
             # After each call findpeak(), similar peaks (distance between them is smaller than r/2) are merged
             # If the found peak already exists in PEAKS, it is discarded and the data point is given the associated peak label in PEAKS.
+
             similar = [x for x in peaks if cdist(peak.reshape(1, -1), x.reshape(1, -1), metric='euclidean') < r / 2]
             if len(similar) == 1:
                 peak = similar[0]
@@ -110,6 +111,7 @@ def meanshift(data, r, c=4):
         else:
             labels[i] = 4
 
+    # for pixels with label 4, assign closest peak/label
     print("Found", len(peaks), "peaks")
     peaks = np.array(peaks)
     return labels, peaks
