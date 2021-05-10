@@ -1,19 +1,19 @@
 from config import *
+import utils
 
 #TODO: convert resulting cluster centers back to RGB
 # cv2.cvtColor(im, cv2.COLOR_LAB2RGB)
 
 
-def plot_all(data, labels, peaks):
-    plt.subplot(1, 2, 1)
-    plt.scatter(data[:, 0], data[:, 1], c='c')
-    plt.scatter(peaks[:, 0], peaks[:, 1], c='r')
+def plot_all(list):
+    return cv2.hconcat([list[0], list[1], list[2]])
 
-    plt.subplot(1, 2, 2)
-    plt.scatter(data[:, 0], data[:, 1], c='c')
-    plt.scatter(data[:, 0], data[:, 1], c=labels, cmap="viridis")
 
-    plt.show()
+def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+    w_min = min(im.shape[1] for im in im_list)
+    im_list_resize = [cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
+                      for im in im_list]
+    return cv2.hconcat(im_list_resize)
 
 
 def plotclusters3D(data, labels, peaks):
@@ -42,7 +42,16 @@ def plotclusters3D(data, labels, peaks):
     plt.show()
 
 
-def show_image(img):
-    cv2.imshow('Segmented Image', img)
+def show_image(img, title='Segmented Image'):
+    cv2.imshow(title, img)
     cv2.waitKey(0)
     cv2.destroyAllWindows()
+
+
+# Display two images
+def show_two_images(a, b, title1="Original", title2="Preprocessed"):
+    plt.subplot(121), plt.imshow(a), plt.title(title1)
+    plt.xticks([]), plt.yticks([])
+    plt.subplot(122), plt.imshow(b), plt.title(title2)
+    plt.xticks([]), plt.yticks([])
+    plt.show()

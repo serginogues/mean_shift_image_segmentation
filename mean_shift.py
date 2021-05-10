@@ -90,7 +90,6 @@ def meanshift(data, r, c):
     end = False
     while not end:
         idx = np.nonzero(labels == LABEL_INIT)[0][0]
-        print(idx, "out of", data.shape[0])
 
         peak, cpts, close = find_peak(data, idx, r, c)
         if np.count_nonzero(close) > 2:
@@ -112,6 +111,7 @@ def meanshift(data, r, c):
             indices = np.nonzero(close)[0]
             labels[indices] = label
             labels[idx] = label
+            print(idx, "out of", data.shape[0])
             # print(np.count_nonzero(labels != 200), "labeled points out of", len(data))
         else:
             labels[idx] = LABEL_XTRA

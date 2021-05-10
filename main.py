@@ -14,15 +14,17 @@ Report:
 Can you suggest other processing steps in order to improve the segmentation
 results? Explain your steps and the reasons behind them.
 """
-from utils import load_image, save_image
+from utils import load_image, save_image, edge_detection
 from imageSegmentation import segmIm
+from visualization import *
 
-r = 25
-c = 20
+r = 5
+c = 2
 
 if __name__ == '__main__':
 
     image_name = 'girl'
-    img = load_image('data/'+image_name+'.jpg')
-    segmented_img, num_peaks = segmIm(img, r, c, True)
-    save_image(segmented_img, image_name+'_r'+str(r)+'_c'+str(c)+'_'+str(num_peaks)+'peaks.jpg')
+    img, img_origin = load_image('data/'+image_name+'.jpg')
+    segmented_img, num_peaks = segmIm(img, r, c, False)
+    final_im = plot_all([cv2.cvtColor(img_origin, cv2.COLOR_RGB2BGR), img, segmented_img])
+    save_image(final_im, image_name+'_r'+str(r)+'_c'+str(c)+'_'+str(num_peaks)+'peaks.jpg')
