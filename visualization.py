@@ -1,19 +1,4 @@
 from config import *
-import utils
-
-#TODO: convert resulting cluster centers back to RGB
-# cv2.cvtColor(im, cv2.COLOR_LAB2RGB)
-
-
-def plot_all(list):
-    return cv2.hconcat([list[0], list[1], list[2]])
-
-
-def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
-    w_min = min(im.shape[1] for im in im_list)
-    im_list_resize = [cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
-                      for im in im_list]
-    return cv2.hconcat(im_list_resize)
 
 
 def plotclusters3D(data, labels, peaks):

@@ -17,28 +17,39 @@ def load_mat():
     return points
 
 
-def load_image(path=r'data/wild.jpg'):
+def load_image():
     """
     Work using the CIELAB color space in your code, where Euclidean distances in this space correlate
     better with color changes perceived by the human eye.
     """
-    img_origin = cv2.imread(path)
+    img_origin = cv2.imread(PATH)
     img = cv2.cvtColor(img_origin, cv2.COLOR_BGR2RGB)
-    img_resize = resize(img, int(img_origin.shape[0]/2), int(img_origin.shape[1]/2))
-    img = blur(img_resize)
-    # cluster the image data in CIELAB color space by first converting the RGB color vectors to CIELAB
-    img_post = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)  # resized by half
-    return img_post, img_resize
+    if RESIZE:
+        img = resize(img, int(img_origin.shape[0]/2), int(img_origin.shape[1]/2))
+    if BLUR:
+        img_blur = blur(img)
+        img_post = cv2.cvtColor(img_blur, cv2.COLOR_RGB2LAB)
+    else:
+        img_post = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+    return img_post, img
 
 
-def save_image(img, filename='test.jpg'):
-    cv2.imwrite("renders/"+filename, img)
-    print('Image saved with name:', filename)
+def save_image(img):
+    import os
+    path_ = "renders/"+IMAGE_NAME+"/"
+    try:
+        os.makedirs(path_, exist_ok=True)
+    except OSError:
+        print("Creation of the directory %s failed" % path_)
+    else:
+        print("Successfully created the directory %s " % path_)
+        cv2.imwrite(path_+"/"+SAVE_NAME, img)
+        print('Image saved with name:', SAVE_NAME)
 
 
 def post_process(labels, peaks, im, dim):
     """
-    :return: segmented image
+    Get segmented image from labels and peaks
     """
 
     if dim:
@@ -161,3 +172,14 @@ def histogram(img, title='Image histogram'):
     plt.ylabel('absolute frequency')
     plt.title(title)
     plt.show()
+
+
+def concatenate_images(list):
+    return cv2.hconcat([list[0], list[1], list[2]])
+
+
+def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
+    w_min = min(im.shape[1] for im in im_list)
+    im_list_resize = [cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
+                      for im in im_list]
+    return cv2.hconcat(im_list_resize)

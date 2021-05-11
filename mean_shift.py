@@ -3,8 +3,8 @@ from config import *
 """
 Mean-shift algorithm
 - Get data points (with many features, i.e. RGB values)
-- Choose feature (column of the data points vector)
-- For each data-point/pixel/row:
+- Choose feature (2D, 3D, 5D, etc)
+- For each data-point/pixel:
     a) Init window of size r
     a.1) Apply Gaussian in window (to place more importance to the data points closest to density center)
     b) Implement findpeak() until convergence (peak is found):
@@ -18,6 +18,7 @@ Mean-shift algorithm
 def find_peak(data, idx, r, c, PLOT_ALL=False):
     """
     Assign a label to data[idx] corresponding to its associated peak
+    :param PLOT_ALL: to visualize the mean-shift algorithm path in 2D at one pixel
     :param data: n-dimensional dataset consisting of p points
     :param idx: index of the data point for which we wish to compute its associated density peak
     :param r: search window radius
@@ -55,11 +56,13 @@ def find_peak(data, idx, r, c, PLOT_ALL=False):
             num_points_inside = data_inside.shape[0]
 
     # CPTS
+    # SPEEDUP: points that are within a distance of r/c of the search path are associated with the converged peak
     for pos in path:
         distances = np.array(cdist(pos.reshape(1, -1), data, metric='euclidean').reshape(-1, 1))
         indices = np.where(distances < (r / c))[0]
         cpts[indices] = 1
 
+    # CLOSE
     # SPEEDUP: Upon finding a peak, associate each data point that is at a distance≤ r from the peak with the cluster defined by that peak.
     distances2 = np.array(cdist(peak.reshape(1, -1), data, metric='euclidean').reshape(-1, 1))
     indices = np.where(distances2 <= r)[0]
@@ -83,40 +86,39 @@ def meanshift(data, r, c):
     :returns: labels: vector containing the label (cluster label) for each data point
              peaks: each column of the matrix is a peak. For each peak we have n-dim values (3D in case RGB)
     """
-    LABEL_INIT = 200000
-    LABEL_XTRA = 100000
+    LABEL_INIT = 200000  # label used to initialize values
+    LABEL_XTRA = 100000  # label given if mean shift returned values are weird. i.e. len(close) is less than 3
     labels = np.full(data.shape[0], LABEL_INIT)
     peaks = []
     end = False
     while not end:
-        idx = np.nonzero(labels == LABEL_INIT)[0][0]
+        idx = np.nonzero(labels == LABEL_INIT)[0][0]  # EXTRA SPEEDUP: select first non labeled data point instead of going through all data
+        print(idx, "out of", data.shape[0])
+        peak, cpts, close = find_peak(data, idx, r, c)  # find peak for data[idx] and get peak "coordinates" and the linked data points
 
-        peak, cpts, close = find_peak(data, idx, r, c)
         if np.count_nonzero(close) > 2:
+
             # After each call findpeak(), similar peaks (distance between them is smaller than r/2) are merged
             # and the data point is given the associated peak label in PEAKS.
-
             similar = [x for x in peaks if cdist(peak.reshape(1, -1), x.reshape(1, -1), metric='euclidean') < r / 2]
             if len(similar) == 1:
-                peak = similar[0]
+                peak = similar[0]  # get peak similar to the one found
             else:
-                peaks.append(peak)
+                peaks.append(peak)  # peak is unique so add it to list
 
-            array = np.array(peaks)
-            label = np.where(array == peak)[0][0]
+            array = np.array(peaks)  # work with numpy for optimization
+            label = np.where(array == peak)[0][0]  # get peak's label (index in peaks list)
 
-            # SPEEDUP: points that are within a distance of r/c of the search path are associated with the converged peak
-            indices = np.nonzero(cpts)[0]
-            labels[indices] = label
-            indices = np.nonzero(close)[0]
-            labels[indices] = label
-            labels[idx] = label
-            print(idx, "out of", data.shape[0])
+            indices = np.nonzero(cpts)[0]  # get points that are within a distance of r/c of the search path
+            labels[indices] = label  # assign label
+            indices = np.nonzero(close)[0]  # get points that are at a distance≤ r from the peak
+            labels[indices] = label  # assign label
+            labels[idx] = label  # assign label
             # print(np.count_nonzero(labels != 200), "labeled points out of", len(data))
         else:
             labels[idx] = LABEL_XTRA
 
-        if np.count_nonzero(labels == LABEL_INIT) == 0:
+        if np.count_nonzero(labels == LABEL_INIT) == 0:  # end process when all points are labeled
             end = True
 
     print("Found", len(peaks), "peaks")
