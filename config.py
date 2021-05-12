@@ -15,7 +15,7 @@ FEATURE_3D = False  # FEATURE_3D=True -> 3D, FEATURE_3D=False -> 5D
 IMAGE_NAME = 'bigben'  # image to be used from data/
 BLUR = True  # blur the image during preprocessing
 RESIZE = True  # resize by half the image during preprocessing
-SAVE = True  # save the image at the end
+SAVE = False  # save the image at the end
 
 PATH = 'data/'+IMAGE_NAME+'.jpg'
 
