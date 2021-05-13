@@ -24,8 +24,8 @@ if __name__ == '__main__':
     print("--- %s seconds ---" % seconds)
 
     if SAVE:
-        SAVE_NAME = SAVE_NAME+str(round(seconds))+'sec.jpg'
-        save_image(final_im)
+        SAVE_NAME = IMAGE_NAME+'_r'+str(R)+'_c'+str(C)+dim_name()+blur_name()+'_'+str(round(seconds))+'sec.jpg'
+        save_image(final_im, SAVE_NAME)
     else:
         show_image(final_im)
 

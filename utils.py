@@ -26,7 +26,7 @@ def pre_process():
     img_origin = cv2.imread(PATH)
     img = cv2.cvtColor(img_origin, cv2.COLOR_BGR2RGB)
     if RESIZE:
-        img = resize(img, int(img_origin.shape[0]/2), int(img_origin.shape[1]/2))
+        img = resize(img, int(img_origin.shape[0] / 2), int(img_origin.shape[1] / 2))
     if BLUR:
         img_blur = blur(img)
         img_post = cv2.cvtColor(img_blur, cv2.COLOR_RGB2LAB)
@@ -36,16 +36,16 @@ def pre_process():
     return img_post, img
 
 
-def save_image(img):
+def save_image(img, SAVE_NAME):
     import os
-    path_ = "renders/"+IMAGE_NAME+"/"
+    path_ = "renders/" + IMAGE_NAME + "/"
     try:
         os.makedirs(path_, exist_ok=True)
     except OSError:
         print("Creation of the directory %s failed" % path_)
     else:
         print("Successfully created the directory %s " % path_)
-        cv2.imwrite(path_+"/"+SAVE_NAME, img)
+        cv2.imwrite(path_ + "/" + SAVE_NAME, img)
         print('Image saved with name:', SAVE_NAME)
 
 
@@ -96,7 +96,7 @@ def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
     return cv2.hconcat(im_list_resize)
 
 
-def save_all_original_img():
+def save_all_original_img(SAVE_NAME):
     list2 = []
     a = 'data/animal.jpg'
     img_origin = cv2.imread(a)
@@ -104,34 +104,53 @@ def save_all_original_img():
     b = 'data/bigben.jpg'
     c = 'data/girl.jpg'
     d = 'data/mask.jpg'
-    list = [b,c,d]
+    list = [b, c, d]
 
     for im in list:
         img_origin = cv2.imread(im)
-        img = resize(img_origin, int(img_origin.shape[0]/2), int(img_origin.shape[1]/2))
+        img = resize(img_origin, int(img_origin.shape[0] / 2), int(img_origin.shape[1] / 2))
         list2.append(img)
 
     im = concatenate_images(list2)
-    save_image(im)
+    save_image(im, SAVE_NAME)
 
 
-def np_apply_along_axis(func1d, axis, arr):
+def mean_shift_test():
     """
-    This allows to use np_mean/np_std instead of np.mean/np.std with axis support in numba:
-    https://github.com/numba/numba/issues/1269#issuecomment-472574352
+    Test fucntion to compare with scratch implementation
+    https://www.machinecurve.com/index.php/2020/04/23/how-to-perform-mean-shift-clustering-with-python-in-scikit/
     """
-    assert arr.ndim == 2
-    assert axis in [0, 1]
-    if axis == 0:
-        result = np.empty(arr.shape[1])
-        for i in range(len(result)):
-            result[i] = func1d(arr[:, i])
-    else:
-        result = np.empty(arr.shape[0])
-        for i in range(len(result)):
-            result[i] = func1d(arr[i, :])
-    return result
+    from sklearn.datasets import make_blobs
+    from sklearn.cluster import MeanShift, estimate_bandwidth
+    from mean_shift import meanshift
+    # Configuration options
+    num_samples_total = 10000
+    cluster_centers = [(5, 5), (3, 3), (1, 1)]
+    num_classes = len(cluster_centers)
+    # Generate data
+    X, targets = make_blobs(n_samples=num_samples_total, centers=cluster_centers, n_features=num_classes,
+                            center_box=(0, 1), cluster_std=0.30)
+    # Estimate bandwith
+    bandwidth = estimate_bandwidth(X, quantile=0.2, n_samples=500)
+    # Fit Mean Shift with Scikit
+    ms = MeanShift(bandwidth=bandwidth)
+    ms.fit(X)
+    # labels = ms.labels_
+    # labels_unique = np.unique(labels)
+    # n_clusters_ = len(labels_unique)
+    # Predict the cluster for all the samples
+    P = ms.predict(X)
+    # Generate scatter plot for training data
+    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426' if x == 2 else '#67c614', P))
 
+    plt.subplot(1, 2, 1)
+    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    plt.title(f'Sklearn')
 
-def np_mean(array, axis):
-    return np_apply_along_axis(np.mean, axis, array)
+    labels, peaks = meanshift(data=X, r=bandwidth, c=2)
+    colors = list(map(lambda x: '#3b4cc0' if x == 1 else '#b40426' if x == 2 else '#67c614', labels))
+    plt.subplot(1, 2, 2)
+    plt.scatter(X[:, 0], X[:, 1], c=colors, marker="o", picker=True)
+    plt.title(f'Scratch code')
+
+    plt.show()

@@ -1,5 +1,5 @@
 from scipy import io
-from scipy.spatial.distance import cdist
+from scipy.spatial.distance import cdist, pdist
 import numpy as np
 import matplotlib.pyplot as plt
 import cv2
@@ -10,12 +10,12 @@ import time
 
 # mean shift parameters
 R = 60  # window radius
-C = 2
+C = 4
 FEATURE_3D = False  # FEATURE_3D=True -> 3D, FEATURE_3D=False -> 5D
 
 # image parameters
 IMAGE_NAME = 'bigben'  # image to be used from data/
-BLUR = False  # blur the image during preprocessing
+BLUR = True  # blur the image during preprocessing
 RESIZE = False  # resize by half the image during preprocessing
 
 SAVE = True  # save the image at the end
@@ -34,7 +34,4 @@ def dim_name():
         return '_3D'
     else:
         return '_5D'
-
-
-SAVE_NAME = IMAGE_NAME+'_r'+str(R)+'_c'+str(C)+dim_name()+blur_name()+'_'
 
