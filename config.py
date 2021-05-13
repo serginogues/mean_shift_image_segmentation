@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import cv2
 import itertools
 from tqdm import tqdm
+from numba import njit
+import time
 
 # mean shift parameters
 R = 50  # window radius
@@ -14,9 +16,9 @@ FEATURE_3D = False  # FEATURE_3D=True -> 3D, FEATURE_3D=False -> 5D
 # image parameters
 IMAGE_NAME = 'bigben'  # image to be used from data/
 BLUR = True  # blur the image during preprocessing
-RESIZE = True  # resize by half the image during preprocessing
-SAVE = False  # save the image at the end
+RESIZE = False  # resize by half the image during preprocessing
 
+SAVE = False  # save the image at the end
 PATH = 'data/'+IMAGE_NAME+'.jpg'
 
 

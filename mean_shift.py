@@ -15,10 +15,47 @@ Mean-shift algorithm
 """
 
 
-def find_peak(data, idx, r, c, PLOT_ALL=False):
+def euclidean_distance(v1, v2):
+    a = cdist(v1, v2, metric='euclidean')
+    # b = np.linalg.norm(v1-v2)
+    return a
+
+
+@njit
+def shift(distances, data, r):
+    indices = np.where(distances < r)[0]
+    data_inside = data[indices]
+    peak = np_mean(data_inside, axis=0)
+    return peak, data_inside
+
+
+@njit
+def np_apply_along_axis(func1d, axis, arr):
+    """
+    This allows to use np_mean/np_std instead of np.mean/np.std with axis support in numba:
+    https://github.com/numba/numba/issues/1269#issuecomment-472574352
+    """
+    assert arr.ndim == 2
+    assert axis in [0, 1]
+    if axis == 0:
+        result = np.empty(arr.shape[1])
+        for i in range(len(result)):
+            result[i] = func1d(arr[:, i])
+    else:
+        result = np.empty(arr.shape[0])
+        for i in range(len(result)):
+            result[i] = func1d(arr[i, :])
+    return result
+
+
+@njit
+def np_mean(array, axis):
+    return np_apply_along_axis(np.mean, axis, array)
+
+
+def find_peak(data, idx, r, c):
     """
     Assign a label to data[idx] corresponding to its associated peak
-    :param PLOT_ALL: to visualize the mean-shift algorithm path in 2D at one pixel
     :param data: n-dimensional dataset consisting of p points
     :param idx: index of the data point for which we wish to compute its associated density peak
     :param r: search window radius
@@ -32,51 +69,32 @@ def find_peak(data, idx, r, c, PLOT_ALL=False):
     window = data[idx]
     num_points_inside = 0
 
-    if PLOT_ALL:
-        plt.subplot(1, 3, 1)
-        plt.scatter(data[:, 0], data[:, 1], c='c')
-        plt.scatter(window[0], window[1], c='r')
-
     # PEAK
     path = [window]
     found = False
     while not found:
-        distances = np.array(cdist(window.reshape(1, -1), data, metric='euclidean').reshape(-1, 1))
-        indices = np.where(distances < r)[0]
-        data_inside = data[indices]
-        peak = np.mean(data_inside, axis=0)
+        distances = np.array(euclidean_distance(window.reshape(1, -1), data).reshape(-1, 1))
+        peak, data_inside = shift(distances, data, r)
         path.append(peak)
         if abs(num_points_inside - data_inside.shape[0]) < 1:
             found = True
             path = np.array(path)
         else:
             window = peak
-            if PLOT_ALL:
-                plt.scatter(window[0], window[1], c='m')
             num_points_inside = data_inside.shape[0]
 
     # CPTS
     # SPEEDUP: points that are within a distance of r/c of the search path are associated with the converged peak
     for pos in path:
-        distances = np.array(cdist(pos.reshape(1, -1), data, metric='euclidean').reshape(-1, 1))
+        distances = np.array(euclidean_distance(pos.reshape(1, -1), data).reshape(-1, 1))
         indices = np.where(distances < (r / c))[0]
         cpts[indices] = 1
 
     # CLOSE
     # SPEEDUP: Upon finding a peak, associate each data point that is at a distance≤ r from the peak with the cluster defined by that peak.
-    distances2 = np.array(cdist(peak.reshape(1, -1), data, metric='euclidean').reshape(-1, 1))
+    distances2 = np.array(euclidean_distance(peak.reshape(1, -1), data).reshape(-1, 1))
     indices = np.where(distances2 <= r)[0]
     close[indices] = 1
-
-    if PLOT_ALL:
-        plt.subplot(1, 3, 2)
-        plt.scatter(data[:, 0], data[:, 1], c='c')
-        plt.scatter(data[:, 0], data[:, 1], c=cpts, cmap="viridis")
-
-        plt.subplot(1, 3, 3)
-        plt.scatter(data[:, 0], data[:, 1], c='c')
-        plt.scatter(data[:, 0], data[:, 1], c=close, cmap="viridis")
-        plt.show()
 
     return peak, cpts, close
 
@@ -91,35 +109,42 @@ def meanshift(data, r, c):
     labels = np.full(data.shape[0], LABEL_INIT)
     peaks = []
     end = False
-    while not end:
-        idx = np.nonzero(labels == LABEL_INIT)[0][0]  # EXTRA SPEEDUP: select first non labeled data point instead of going through all data
-        print(idx, "out of", data.shape[0])
-        peak, cpts, close = find_peak(data, idx, r, c)  # find peak for data[idx] and get peak "coordinates" and the linked data points
+    with tqdm(total=data.shape[0]) as pbar:
+        while not end:
+            idx = np.nonzero(labels == LABEL_INIT)[0][0]  # EXTRA SPEEDUP: select first non labeled data point instead of going through all data
 
-        if np.count_nonzero(close) > 2:
+            # tqdm custom counter, instead of # print(idx, "out of", data.shape[0])
+            # https://danielhnyk.cz/setting-a-specific-value-to-tqdm-progress-bar/
+            pbar.update(idx - pbar.n)
+            if idx == data.shape[0]:
+                break
 
-            # After each call findpeak(), similar peaks (distance between them is smaller than r/2) are merged
-            # and the data point is given the associated peak label in PEAKS.
-            similar = [x for x in peaks if cdist(peak.reshape(1, -1), x.reshape(1, -1), metric='euclidean') < r / 2]
-            if len(similar) == 1:
-                peak = similar[0]  # get peak similar to the one found
+            peak, cpts, close = find_peak(data, idx, r, c)  # find peak for data[idx] and get peak "coordinates" and the linked data points
+
+            if np.count_nonzero(close) > 2:
+
+                # After each call findpeak(), similar peaks (distance between them is smaller than r/2) are merged
+                # and the data point is given the associated peak label in PEAKS.
+                similar = [x for x in peaks if euclidean_distance(peak.reshape(1, -1), x.reshape(1, -1)) < r / 2]
+                if len(similar) == 1:
+                    peak = similar[0]  # get peak similar to the one found
+                else:
+                    peaks.append(peak)  # peak is unique so add it to list
+
+                array = np.array(peaks)  # work with numpy for optimization
+                label = np.where(array == peak)[0][0]  # get peak's label (index in peaks list)
+
+                indices = np.nonzero(cpts)[0]  # get points that are within a distance of r/c of the search path
+                labels[indices] = label  # assign label
+                indices = np.nonzero(close)[0]  # get points that are at a distance≤ r from the peak
+                labels[indices] = label  # assign label
+                labels[idx] = label  # assign label
+                # print(np.count_nonzero(labels != 200), "labeled points out of", len(data))
             else:
-                peaks.append(peak)  # peak is unique so add it to list
+                labels[idx] = LABEL_XTRA
 
-            array = np.array(peaks)  # work with numpy for optimization
-            label = np.where(array == peak)[0][0]  # get peak's label (index in peaks list)
-
-            indices = np.nonzero(cpts)[0]  # get points that are within a distance of r/c of the search path
-            labels[indices] = label  # assign label
-            indices = np.nonzero(close)[0]  # get points that are at a distance≤ r from the peak
-            labels[indices] = label  # assign label
-            labels[idx] = label  # assign label
-            # print(np.count_nonzero(labels != 200), "labeled points out of", len(data))
-        else:
-            labels[idx] = LABEL_XTRA
-
-        if np.count_nonzero(labels == LABEL_INIT) == 0:  # end process when all points are labeled
-            end = True
+            if np.count_nonzero(labels == LABEL_INIT) == 0:  # end process when all points are labeled
+                end = True
 
     print("Found", len(peaks), "peaks")
 
@@ -128,7 +153,7 @@ def meanshift(data, r, c):
     for i in indices:
         listt = []
         for peak in peaks:
-            listt.append([peak, cdist(peak.reshape(1, -1), data[i].reshape(1, -1), metric='euclidean')[0][0]])
+            listt.append([peak, euclidean_distance(peak.reshape(1, -1), data[i].reshape(1, -1))[0][0]])
         listt = np.asarray(listt, dtype="object")
         label = np.where(listt[:, 1] == min(listt[:, 1]))[0][0]
         labels[i] = label
