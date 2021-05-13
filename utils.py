@@ -22,6 +22,7 @@ def pre_process():
     Work using the CIELAB color space in your code, where Euclidean distances in this space correlate
     better with color changes perceived by the human eye.
     """
+    print("---Preprocessing starts---")
     img_origin = cv2.imread(PATH)
     img = cv2.cvtColor(img_origin, cv2.COLOR_BGR2RGB)
     if RESIZE:
@@ -31,6 +32,7 @@ def pre_process():
         img_post = cv2.cvtColor(img_blur, cv2.COLOR_RGB2LAB)
     else:
         img_post = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+    print("---Preprocessing finished---")
     return img_post, img
 
 
@@ -81,8 +83,10 @@ def blur(im):
 def concatenate_images(list):
     if len(list) == 2:
         return cv2.hconcat([list[0], list[1]])
-    else:
+    elif len(list) == 3:
         return cv2.hconcat([list[0], list[1], list[2]])
+    elif len(list) == 4:
+        return cv2.hconcat([list[0], list[1], list[2], list[3]])
 
 
 def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
@@ -90,3 +94,44 @@ def vconcat_resize_min(im_list, interpolation=cv2.INTER_CUBIC):
     im_list_resize = [cv2.resize(im, (w_min, int(im.shape[0] * w_min / im.shape[1])), interpolation=interpolation)
                       for im in im_list]
     return cv2.hconcat(im_list_resize)
+
+
+def save_all_original_img():
+    list2 = []
+    a = 'data/animal.jpg'
+    img_origin = cv2.imread(a)
+    list2 = [img_origin]
+    b = 'data/bigben.jpg'
+    c = 'data/girl.jpg'
+    d = 'data/mask.jpg'
+    list = [b,c,d]
+
+    for im in list:
+        img_origin = cv2.imread(im)
+        img = resize(img_origin, int(img_origin.shape[0]/2), int(img_origin.shape[1]/2))
+        list2.append(img)
+
+    im = concatenate_images(list2)
+    save_image(im)
+
+
+def np_apply_along_axis(func1d, axis, arr):
+    """
+    This allows to use np_mean/np_std instead of np.mean/np.std with axis support in numba:
+    https://github.com/numba/numba/issues/1269#issuecomment-472574352
+    """
+    assert arr.ndim == 2
+    assert axis in [0, 1]
+    if axis == 0:
+        result = np.empty(arr.shape[1])
+        for i in range(len(result)):
+            result[i] = func1d(arr[:, i])
+    else:
+        result = np.empty(arr.shape[0])
+        for i in range(len(result)):
+            result[i] = func1d(arr[i, :])
+    return result
+
+
+def np_mean(array, axis):
+    return np_apply_along_axis(np.mean, axis, array)

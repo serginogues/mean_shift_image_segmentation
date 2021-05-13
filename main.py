@@ -20,9 +20,11 @@ if __name__ == '__main__':
     segmented_img, num_peaks = segmIm(img, R, C, FEATURE_3D)
     final_im = concatenate_images([cv2.cvtColor(img_origin, cv2.COLOR_RGB2BGR), segmented_img])
 
-    print("--- %s seconds ---" % (time.time() - start_time))
+    seconds = time.time() - start_time
+    print("--- %s seconds ---" % seconds)
 
     if SAVE:
+        SAVE_NAME = SAVE_NAME+str(round(seconds))+'sec.jpg'
         save_image(final_im)
     else:
         show_image(final_im)
