@@ -22,7 +22,6 @@ def pre_process():
     Work using the CIELAB color space in your code, where Euclidean distances in this space correlate
     better with color changes perceived by the human eye.
     """
-    print("---Preprocessing starts---")
     img_origin = cv2.imread(PATH)
     img = cv2.cvtColor(img_origin, cv2.COLOR_BGR2RGB)
     if RESIZE:
@@ -32,7 +31,6 @@ def pre_process():
         img_post = cv2.cvtColor(img_blur, cv2.COLOR_RGB2LAB)
     else:
         img_post = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
-    print("---Preprocessing finished---")
     return img_post, img
 
 

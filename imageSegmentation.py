@@ -10,7 +10,6 @@ def segmIm(im, r, c=4, dim=True):
     """
     Image Segmentation with mean-shift algorithm
     """
-    print("---Image segmentation starts---")
     points = reshape_im(im, dim)
     labels, peaks = meanshift(data=points, r=r, c=c)
     segmented_img = post_process(labels, peaks, im, dim)
