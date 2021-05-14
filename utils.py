@@ -152,3 +152,20 @@ def mean_shift_test():
     plt.title(f'Scratch code')
 
     plt.show()
+
+
+def plot_all():
+    for c in [10, 20, 40, 80]:
+        C = c
+        print("r:", R, "c:", C, "3D?:", FEATURE_3D)
+        start_time = time.time()
+
+        img, img_origin = pre_process()
+        segmented_img, num_peaks = segmIm(img, R, C, FEATURE_3D)
+        # final_im = concatenate_images([cv2.cvtColor(img_origin, cv2.COLOR_RGB2BGR), segmented_img])
+
+        seconds = time.time() - start_time
+        print("--- %s seconds ---" % seconds)
+
+        SAVE_NAME = IMAGE_NAME+'_r'+str(R)+'_c'+str(C)+dim_name()+blur_name()+'_'+str(round(seconds))+'sec.jpg'
+        save_image(segmented_img, SAVE_NAME)

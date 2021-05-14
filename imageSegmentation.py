@@ -1,9 +1,10 @@
 """
 Image Segmentation with mean-shift algorithm
 """
-from config import np, plt
+from config import np
 from utils import post_process
 from mean_shift import meanshift
+from visualization import plotclusters3D
 
 
 def segmIm(im, r, c=4, dim=True):
@@ -14,7 +15,7 @@ def segmIm(im, r, c=4, dim=True):
     labels, peaks = meanshift(data=points, r=r, c=c)
     segmented_img = post_process(labels, peaks, im, dim)
 
-    # plotclusters3D(points, labels, peaks)
+    plotclusters3D(points, labels, peaks)
 
     return segmented_img, len(peaks)
 
