@@ -1,11 +1,12 @@
 """
 Mean-shift Image segmentation
 
-HOW TO USE:
-0- Open config.py
-1- Set R, C and FEATURE_3D
-2- Set IMAGE_NAME and booleans RESIZE and BLUR (for preprocessing)
-3- Run
+********HOW TO USE***********
+pip install -r requirements.txt
+0 - Open config.py
+1 - Set R, C and FEATURE_3D
+2 - Set IMAGE_NAME and booleans RESIZE and BLUR (for preprocessing)
+3 - Run
 """
 from config import *
 from utils import pre_process, save_image, concatenate_images
